@@ -1,0 +1,25 @@
+{
+  "name": "owes_backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "startjavascript":"node dist/app.js",
+    "dev2":"nodemon dist/app.js",
+    "dev": "nodemon --exec ts-node src/app.ts",
+    "watch": "tsc -w"
+  },
+  "author": "Orifha Tshikotshi",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.3.1",
+    "graphql": "^16.6.0",
+    "tsconfig.json": "^1.0.11"
+  }
+}
