@@ -1,25 +1,38 @@
 {
-  "name": "owes_backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "startjavascript":"node dist/app.js",
-    "dev2":"nodemon dist/app.js",
-    "dev": "nodemon --exec ts-node src/app.ts",
-    "watch": "tsc -w"
-  },
-  "author": "Orifha Tshikotshi",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^18.11.18",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.9.4"
-  },
-  "dependencies": {
-    "@apollo/server": "^4.3.1",
-    "graphql": "^16.6.0",
-    "tsconfig.json": "^1.0.11"
-  }
+   "name": "owes_backend",
+   "version": "1.0.0",
+   "description": "",
+   "main": "app.js",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "startjavascript": "node dist/app.js",
+      "dev2": "nodemon dist/app.js",
+      "dev": "nodemon --exec ts-node src/app.ts",
+      "watch": "tsc -w",
+      "typeorm": "typeorm-ts-node-commonjs"
+   },
+   "author": "Orifha Tshikotshi",
+   "license": "ISC",
+   "devDependencies": {
+      "@types/cors": "^2.8.13",
+      "@types/express": "^4.17.16",
+      "@types/node": "^16.11.10",
+      "ts-node": "^10.9.1",
+      "typescript": "^4.9.5"
+   },
+   "dependencies": {
+      "@apollo/server": "^4.3.1",
+      "body-parser": "^1.20.1",
+      "class-validator": "^0.14.0",
+      "cors": "^2.8.5",
+      "dotenv": "^16.0.3",
+      "express": "^4.18.2",
+      "graphql": "^15.7.2",
+      "http": "0.0.1-security",
+      "pg": "^8.9.0",
+      "reflect-metadata": "^0.1.13",
+      "tsconfig.json": "^1.0.11",
+      "type-graphql": "^1.1.1",
+      "typeorm": "0.3.11"
+   }
 }
