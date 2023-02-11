@@ -35,9 +35,13 @@ _Below is an example of installing and setting up the app.
    ```
 3. Run the application
    ```sh
-   npm run dev
+   
+   first "run npm watch" in another terminal
+   
+   THEN run (in a different terminal):
+   "npm run dev"
    OR
-   npm run dev2
+   "npm run dev2"
    ```
 Note: You might need to install nodemon as well. 
 
