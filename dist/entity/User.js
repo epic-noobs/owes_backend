@@ -13,10 +13,6 @@ exports.User = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 let User = class User extends typeorm_1.BaseEntity {
-    constructor() {
-        super(...arguments);
-        this.unreliable = false;
-    }
 };
 __decorate([
     (0, type_graphql_1.Field)(() => type_graphql_1.ID),
@@ -37,7 +33,7 @@ __decorate([
     (0, type_graphql_1.Field)(),
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], User.prototype, "user_name", void 0);
+], User.prototype, "username", void 0);
 __decorate([
     (0, type_graphql_1.Field)(),
     (0, typeorm_1.Column)("text"),
@@ -45,7 +41,7 @@ __decorate([
 ], User.prototype, "email", void 0);
 __decorate([
     (0, type_graphql_1.Field)(),
-    (0, typeorm_1.Column)("text"),
+    (0, typeorm_1.Column)("boolean", { default: false }),
     __metadata("design:type", Boolean)
 ], User.prototype, "unreliable", void 0);
 __decorate([
@@ -59,14 +55,14 @@ __decorate([
 ], User.prototype, "password", void 0);
 __decorate([
     (0, type_graphql_1.Field)(),
-    (0, typeorm_1.CreateDateColumn)(),
+    (0, typeorm_1.CreateDateColumn)({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" }),
     __metadata("design:type", Date)
 ], User.prototype, "creation_date", void 0);
 __decorate([
     (0, type_graphql_1.Field)(),
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], User.prototype, "created_at", void 0);
+    (0, typeorm_1.UpdateDateColumn)({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" }),
+    __metadata("design:type", Date)
+], User.prototype, "updated_at", void 0);
 User = __decorate([
     (0, type_graphql_1.ObjectType)(),
     (0, typeorm_1.Entity)("user")
