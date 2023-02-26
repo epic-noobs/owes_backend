@@ -1,14 +1,34 @@
+import { isAuth } from "./../isAuth";
+import { createRefreshToken, createAccessToken } from "./../auth";
 import { AppContext } from "src/AppConext";
 import { User } from "../entity/User";
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Field,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import argon2 from "argon2";
+import { sendRefreshToken } from "../sendRefreshToken";
+
+/**This is what will be returned during login */
+@ObjectType()
+class LoginResponse {
+  @Field()
+  accessToken: string;
+}
 
 @Resolver(User)
 export class UserResolver {
+  @UseMiddleware(isAuth)
   @Query(() => String)
-  async testQuery(@Ctx() { req }: AppContext) {
-    console.log("testing");
-    return req;
+  async testQuery(@Ctx() { payload }: AppContext) {
+    console.log(payload);
+    return `Hello ${payload?.userId}`;
   }
 
   /**
@@ -69,6 +89,44 @@ export class UserResolver {
       throw new Error("User already exist.");
       // TODO: Introduce a logger to keep track of what the users are doing.
       // TODO: Introduce Nodamailer or any other email sending platform.
+    }
+  }
+
+  /**
+   *
+   * @param email {string} - email provided by the user to login.
+   * @param password {password} - password provided by the user for login.
+   * @returns {LoginResponse} - Returns the LiginResponse that consist of the accessToken.
+   */
+  @Mutation(() => LoginResponse)
+  async loginUser(
+    @Arg("email") email: string,
+    @Arg("password") password: string,
+    @Ctx() { res }: AppContext
+  ): Promise<LoginResponse> {
+    const userExist = await User.findOne({ where: { email: email } });
+    if (!userExist) {
+      throw new Error(
+        "Invalid Login, please check if the password and email are valid"
+      );
+    } else {
+      try {
+        //Compare the input password with the hashed password.
+        if (await argon2.verify(userExist.password, password)) {
+          //TODO: Set the domain and path at later stage.
+          // return an access token.
+          sendRefreshToken(res, createRefreshToken(userExist));
+          return {
+            accessToken: createAccessToken(userExist),
+          };
+        } else {
+          throw new Error(
+            "Invalid Login, please check if the password and email are valid"
+          );
+        }
+      } catch (error) {
+        throw new Error(error);
+      }
     }
   }
 }

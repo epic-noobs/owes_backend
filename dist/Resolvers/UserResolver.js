@@ -16,13 +16,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolver = void 0;
+const isAuth_1 = require("./../isAuth");
+const auth_1 = require("./../auth");
 const User_1 = require("../entity/User");
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
+const sendRefreshToken_1 = require("../sendRefreshToken");
+let LoginResponse = class LoginResponse {
+};
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], LoginResponse.prototype, "accessToken", void 0);
+LoginResponse = __decorate([
+    (0, type_graphql_1.ObjectType)()
+], LoginResponse);
 let UserResolver = class UserResolver {
-    async testQuery({ req }) {
-        console.log("testing");
-        return req;
+    async testQuery({ payload }) {
+        console.log(payload);
+        return `Hello ${payload === null || payload === void 0 ? void 0 : payload.userId}`;
     }
     async createUser(email, password, firstname, lastname, username) {
         const userExist = await User_1.User.findOne({ where: { email: email } });
@@ -56,8 +68,31 @@ let UserResolver = class UserResolver {
             throw new Error("User already exist.");
         }
     }
+    async loginUser(email, password, { res }) {
+        const userExist = await User_1.User.findOne({ where: { email: email } });
+        if (!userExist) {
+            throw new Error("Invalid Login, please check if the password and email are valid");
+        }
+        else {
+            try {
+                if (await argon2_1.default.verify(userExist.password, password)) {
+                    (0, sendRefreshToken_1.sendRefreshToken)(res, (0, auth_1.createRefreshToken)(userExist));
+                    return {
+                        accessToken: (0, auth_1.createAccessToken)(userExist),
+                    };
+                }
+                else {
+                    throw new Error("Invalid Login, please check if the password and email are valid");
+                }
+            }
+            catch (error) {
+                throw new Error(error);
+            }
+        }
+    }
 };
 __decorate([
+    (0, type_graphql_1.UseMiddleware)(isAuth_1.isAuth),
     (0, type_graphql_1.Query)(() => String),
     __param(0, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
@@ -75,6 +110,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "createUser", null);
+__decorate([
+    (0, type_graphql_1.Mutation)(() => LoginResponse),
+    __param(0, (0, type_graphql_1.Arg)("email")),
+    __param(1, (0, type_graphql_1.Arg)("password")),
+    __param(2, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "loginUser", null);
 UserResolver = __decorate([
     (0, type_graphql_1.Resolver)(User_1.User)
 ], UserResolver);
