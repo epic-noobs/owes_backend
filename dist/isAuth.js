@@ -5,7 +5,6 @@ const jsonwebtoken_1 = require("jsonwebtoken");
 const isAuth = ({ context }, next) => {
     const authorization = context.req.headers["authorization"];
     if (!authorization) {
-        console.log("help");
         throw new Error("not authenticated");
     }
     try {
@@ -14,7 +13,6 @@ const isAuth = ({ context }, next) => {
         context.payload = payload;
     }
     catch (err) {
-        console.log(err);
         throw new Error("not authenticated");
     }
     return next();

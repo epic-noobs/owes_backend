@@ -1,5 +1,12 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BaseEntity,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 /**
  * This is the user entity.
@@ -28,11 +35,11 @@ export class User extends BaseEntity {
   email: string;
 
   @Field()
-  @Column("boolean", {default:false})
+  @Column("boolean", { default: false })
   unreliable: boolean;
 
   @Field()
-  @Column("boolean", {default:false})
+  @Column("boolean", { default: false })
   user_verified: boolean;
 
   /**
@@ -44,10 +51,20 @@ export class User extends BaseEntity {
   password: string;
 
   @Field()
-  @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+  @CreateDateColumn({
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP(6)",
+  })
   creation_date: Date;
 
   @Field()
-  @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+  @UpdateDateColumn({
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP(6)",
+    onUpdate: "CURRENT_TIMESTAMP(6)",
+  })
   updated_at: Date;
+
+  @Column("int", { default: 0 })
+  tokenVersion: number;
 }

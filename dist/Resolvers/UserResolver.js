@@ -37,6 +37,9 @@ let UserResolver = class UserResolver {
         return `Hello ${payload === null || payload === void 0 ? void 0 : payload.userId}`;
     }
     async createUser(email, password, firstname, lastname, username) {
+        if (username.length < 3 || firstname.length < 3 || lastname.length < 3) {
+            throw new Error("Invalid Registration, The username, firstname and lastname should be greater than two characters.");
+        }
         const userExist = await User_1.User.findOne({ where: { email: email } });
         if (!userExist) {
             let strongPassword = new RegExp("(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{8,})");

@@ -39,9 +39,11 @@ import { sendRefreshToken } from "./sendRefreshToken";
     }
     let payload = null;
     try {
-      payload = verify(token, process.env.REFRESH_TOKEN_SECRET as string) as any; //verify if the token is valid.
+      payload = verify(
+        token,
+        process.env.REFRESH_TOKEN_SECRET as string
+      ) as any; //verify if the token is valid.
     } catch (error) {
-      console.log(error);
       return res.send({ ok: false, accessToken: "" });
     }
     const user = await User.findOne({ where: { id: payload.userId } }); //find user for this id.
@@ -49,12 +51,16 @@ import { sendRefreshToken } from "./sendRefreshToken";
     if (!user) {
       return res.send({ ok: false, accessToken: "" });
     }
-    //res.cookie('sid', createRefreshToken(user),{httpOnly:true});
+    //If the user token version is not equal to the version in the payload then the token is invalid.
+    if (user.tokenVersion !== payload.tokenVersion) {
+      return res.send({ ok: false, accessToken: "" });
+    }
+
     sendRefreshToken(res, createRefreshToken(user));
     //Send back access token
     return res.send({ ok: true, accessToken: createAccessToken(user) });
   });
-  
+
   const httpServer = http.createServer(app);
 
   const schema = await buildSchema({

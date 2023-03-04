@@ -48,6 +48,11 @@ export class UserResolver {
     @Arg("lastname") lastname: string,
     @Arg("username") username: string
   ) {
+    if (username.length < 3 || firstname.length < 3 || lastname.length < 3) {
+      throw new Error(
+        "Invalid Registration, The username, firstname and lastname should be greater than two characters."
+      );
+    }
     //Check if user alredy exist.
     const userExist = await User.findOne({ where: { email: email } });
     if (!userExist) {
@@ -91,6 +96,35 @@ export class UserResolver {
       // TODO: Introduce Nodamailer or any other email sending platform.
     }
   }
+
+  /**
+   * @description This function revokes the refresh token for user.
+   * This will hep when user forgets password so that we revoke all the refresh tokens that the user has.
+   * This will also help if the user is hacked and we need to revoke all the refresh tokens.
+   * @param userId - The userId of the users refresh token being revoked.
+   * @returns {boolean} - true if the revoking succeeded and false if the revoking did not succeed.
+   */
+  // @Mutation(() => Boolean)
+  // async revokeRefreshTokensForUser(@Arg("userId", () => ID) userId: number) {
+  //   try {
+  //     const userExist = await User.findOne({ where: { id: userId } });
+  //     if (!userExist) {
+  //       throw new Error("Invalid refresh.");
+  //     }
+  //     let id = userExist.id;
+  //     let token = userExist.tokenVersion;
+  //     if (!isNaN(token) ) {
+  //       let updatedToken = token + 1;
+  //       await User.update({ id }, { tokenVersion: updatedToken });
+  //     } else {
+  //       throw new Error("Invalid refresh.");
+  //     }
+  //     return true;
+  //   } catch (error) {
+  //     console.log(error);
+  //     return false;
+  //   }
+  // }
 
   /**
    *

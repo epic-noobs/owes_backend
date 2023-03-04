@@ -57,11 +57,13 @@ const sendRefreshToken_1 = require("./sendRefreshToken");
             payload = (0, jsonwebtoken_1.verify)(token, process.env.REFRESH_TOKEN_SECRET);
         }
         catch (error) {
-            console.log(error);
             return res.send({ ok: false, accessToken: "" });
         }
         const user = await User_1.User.findOne({ where: { id: payload.userId } });
         if (!user) {
+            return res.send({ ok: false, accessToken: "" });
+        }
+        if (user.tokenVersion !== payload.tokenVersion) {
             return res.send({ ok: false, accessToken: "" });
         }
         (0, sendRefreshToken_1.sendRefreshToken)(res, (0, auth_1.createRefreshToken)(user));
