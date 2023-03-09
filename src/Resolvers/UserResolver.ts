@@ -1,14 +1,34 @@
+import { isAuth } from "./../isAuth";
+import { createRefreshToken, createAccessToken } from "./../auth";
 import { AppContext } from "src/AppConext";
 import { User } from "../entity/User";
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Field,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import argon2 from "argon2";
+import { sendRefreshToken } from "../sendRefreshToken";
+
+/**This is what will be returned during login */
+@ObjectType()
+class LoginResponse {
+  @Field()
+  accessToken: string;
+}
 
 @Resolver(User)
 export class UserResolver {
+  @UseMiddleware(isAuth)
   @Query(() => String)
-  async testQuery(@Ctx() { req }: AppContext) {
-    console.log("testing");
-    return req;
+  async testQuery(@Ctx() { payload }: AppContext) {
+    console.log(payload);
+    return `Hello ${payload?.userId}`;
   }
 
   /**
@@ -28,6 +48,11 @@ export class UserResolver {
     @Arg("lastname") lastname: string,
     @Arg("username") username: string
   ) {
+    if (username.length < 3 || firstname.length < 3 || lastname.length < 3) {
+      throw new Error(
+        "Invalid Registration, The username, firstname and lastname should be greater than two characters."
+      );
+    }
     //Check if user alredy exist.
     const userExist = await User.findOne({ where: { email: email } });
     if (!userExist) {
@@ -69,6 +94,73 @@ export class UserResolver {
       throw new Error("User already exist.");
       // TODO: Introduce a logger to keep track of what the users are doing.
       // TODO: Introduce Nodamailer or any other email sending platform.
+    }
+  }
+
+  /**
+   * @description This function revokes the refresh token for user.
+   * This will hep when user forgets password so that we revoke all the refresh tokens that the user has.
+   * This will also help if the user is hacked and we need to revoke all the refresh tokens.
+   * @param userId - The userId of the users refresh token being revoked.
+   * @returns {boolean} - true if the revoking succeeded and false if the revoking did not succeed.
+   */
+  // @Mutation(() => Boolean)
+  // async revokeRefreshTokensForUser(@Arg("userId", () => ID) userId: number) {
+  //   try {
+  //     const userExist = await User.findOne({ where: { id: userId } });
+  //     if (!userExist) {
+  //       throw new Error("Invalid refresh.");
+  //     }
+  //     let id = userExist.id;
+  //     let token = userExist.tokenVersion;
+  //     if (!isNaN(token) ) {
+  //       let updatedToken = token + 1;
+  //       await User.update({ id }, { tokenVersion: updatedToken });
+  //     } else {
+  //       throw new Error("Invalid refresh.");
+  //     }
+  //     return true;
+  //   } catch (error) {
+  //     console.log(error);
+  //     return false;
+  //   }
+  // }
+
+  /**
+   *
+   * @param email {string} - email provided by the user to login.
+   * @param password {password} - password provided by the user for login.
+   * @returns {LoginResponse} - Returns the LiginResponse that consist of the accessToken.
+   */
+  @Mutation(() => LoginResponse)
+  async loginUser(
+    @Arg("email") email: string,
+    @Arg("password") password: string,
+    @Ctx() { res }: AppContext
+  ): Promise<LoginResponse> {
+    const userExist = await User.findOne({ where: { email: email } });
+    if (!userExist) {
+      throw new Error(
+        "Invalid Login, please check if the password and email are valid"
+      );
+    } else {
+      try {
+        //Compare the input password with the hashed password.
+        if (await argon2.verify(userExist.password, password)) {
+          //TODO: Set the domain and path at later stage.
+          // return an access token.
+          sendRefreshToken(res, createRefreshToken(userExist));
+          return {
+            accessToken: createAccessToken(userExist),
+          };
+        } else {
+          throw new Error(
+            "Invalid Login, please check if the password and email are valid"
+          );
+        }
+      } catch (error) {
+        throw new Error(error);
+      }
     }
   }
 }

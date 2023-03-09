@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isAuth = void 0;
+const jsonwebtoken_1 = require("jsonwebtoken");
+const isAuth = ({ context }, next) => {
+    const authorization = context.req.headers["authorization"];
+    if (!authorization) {
+        throw new Error("not authenticated");
+    }
+    try {
+        const token = authorization.replace("Bearer", "");
+        const payload = (0, jsonwebtoken_1.verify)(token, process.env.ACCESS_TOKEN_SECRET);
+        context.payload = payload;
+    }
+    catch (err) {
+        throw new Error("not authenticated");
+    }
+    return next();
+};
+exports.isAuth = isAuth;
+//# sourceMappingURL=isAuth.js.map
