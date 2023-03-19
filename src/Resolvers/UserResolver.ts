@@ -14,6 +14,7 @@ import {
 } from "type-graphql";
 import argon2 from "argon2";
 import { sendRefreshToken } from "../sendRefreshToken";
+import { verify } from "jsonwebtoken";
 
 /**This is what will be returned during login */
 @ObjectType()
@@ -161,6 +162,81 @@ export class UserResolver {
       } catch (error) {
         throw new Error(error);
       }
+    }
+  }
+
+  /**
+   * @description - Gets the user by id.
+   * @param context - The data received from the appollo context.
+   * @returns - {User} A user that was requested for that user id.
+   */
+  @Query(() => User, { nullable: true })
+  @UseMiddleware(isAuth)
+  async getUser(@Ctx() context: AppContext) {
+    //Get the user token from the headers.
+    const user = context.req.headers.authorization;
+    //Check if user is authenticated.
+    if (!user) {
+      return null;
+    }
+    try {
+      const token = user.replace("Bearer ", "");
+      const foundUser = verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET as string
+      ) as any;
+      const result = await User.findOne({ where: { id: foundUser.userId } });
+      return result;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  /**
+   * @description - Updates the user by id.
+   * @param context  - The data received from the appollo context.
+   * @returns {boolean} - true if user is updated and false if user is not updated
+   */
+  @Mutation(() => Boolean, { nullable: true })
+  @UseMiddleware(isAuth)
+  async updateUser(
+    @Ctx() context: AppContext,
+    @Arg("firstname", { nullable: true }) firstname: string,
+    @Arg("lastname", { nullable: true }) lastname?: string,
+    @Arg("username", { nullable: true }) username?: string
+  ) {
+    //Get the user token from the headers.
+    const user = context.req.headers.authorization;
+    //Check if user is authenticated.
+    if (!user) {
+      throw new Error("not authenticated");
+    }
+    try {
+      const token = user.replace("Bearer ", "");
+      const foundUser = verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET as string
+      ) as any;
+      if (firstname || lastname || username) {
+        await User.update(
+          { id: foundUser.userId },
+          {
+            firstname,
+            lastname,
+            username,
+          }
+        );
+        return true;
+      } else {
+        return false;
+        // throw new Error(
+        //   "Please enter a value you want to update."
+        // );
+      }
+    } catch (error) {
+      console.log(error);
+      throw new Error("Something went wrong, please try again.");
     }
   }
 }
