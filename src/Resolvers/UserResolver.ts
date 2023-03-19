@@ -230,9 +230,6 @@ export class UserResolver {
         return true;
       } else {
         return false;
-        // throw new Error(
-        //   "Please enter a value you want to update."
-        // );
       }
     } catch (error) {
       console.log(error);
