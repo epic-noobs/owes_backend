@@ -32,6 +32,18 @@ export class UserResolver {
     return `Hello ${payload?.userId}`;
   }
 
+  //attempted register
+//   @Mutation(() => Boolean)
+//   async register(
+//     @Arg("email") email: string,
+//     @Arg("password") password: string,
+//     @Arg("firstname") firstname: string,
+//     @Arg("lastname") lastname: string,
+//     @Arg("username") username: string
+//   ) {
+    
+//   }
+
   /**
    * @description - This function creates a new user and returns a boolean when the user has been created.
    * @param email - {string} email provided by the user.
@@ -41,7 +53,7 @@ export class UserResolver {
    * @param username - {string} username provided by the user.
    * @returns - {boolean} true if user has been created.
    */
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean) // Is this register?
   async createUser(
     @Arg("email") email: string,
     @Arg("password") password: string,

@@ -36,7 +36,7 @@ _Below is an example of installing and setting up the app.
 3. Run the application
    ```sh
    
-   first "run npm watch" in another terminal
+   first "npm run watch" in another terminal
    
    THEN run (in a different terminal):
    "npm run dev"

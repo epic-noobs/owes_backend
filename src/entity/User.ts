@@ -6,7 +6,9 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
+import { Friend } from "./Friend";
 
 /**
  * This is the user entity.
@@ -67,4 +69,10 @@ export class User extends BaseEntity {
 
   @Column("int", { default: 0 })
   tokenVersion: number;
+
+  @OneToMany(() => Friend, (friend) => friend.following_user_id)
+  friend_following: Friend[]
+
+  @OneToMany(() => Friend, (friend) => friend.followed_user_id)
+  friend_followed: Friend[]
 }
