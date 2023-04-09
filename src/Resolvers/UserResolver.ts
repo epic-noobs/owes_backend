@@ -53,7 +53,7 @@ export class UserResolver {
    * @param username - {string} username provided by the user.
    * @returns - {boolean} true if user has been created.
    */
-  @Mutation(() => Boolean) // Is this register?
+  @Mutation(() => Boolean)
   async createUser(
     @Arg("email") email: string,
     @Arg("password") password: string,
