@@ -19,6 +19,7 @@ exports.UserResolver = void 0;
 const isAuth_1 = require("./../isAuth");
 const auth_1 = require("./../auth");
 const User_1 = require("../entity/User");
+const Follower_1 = require("../entity/Follower");
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
 const sendRefreshToken_1 = require("../sendRefreshToken");
@@ -35,6 +36,13 @@ let UserResolver = class UserResolver {
     async testQuery({ payload }) {
         console.log(payload);
         return `Hello ${payload === null || payload === void 0 ? void 0 : payload.userId}`;
+    }
+    async test_follower(following_user, followed_user) {
+        await Follower_1.Follower.insert({
+            following_user,
+            followed_user
+        });
+        return true;
     }
     async createUser(email, password, firstname, lastname, username) {
         if (username.length < 3 || firstname.length < 3 || lastname.length < 3) {
@@ -102,6 +110,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "testQuery", null);
+__decorate([
+    (0, type_graphql_1.Mutation)(() => Boolean),
+    __param(0, (0, type_graphql_1.Arg)("following_user")),
+    __param(1, (0, type_graphql_1.Arg)("followed_user")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "test_follower", null);
 __decorate([
     (0, type_graphql_1.Mutation)(() => Boolean),
     __param(0, (0, type_graphql_1.Arg)("email")),
