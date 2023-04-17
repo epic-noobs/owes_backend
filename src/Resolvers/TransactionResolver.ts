@@ -3,14 +3,20 @@ import { AppContext } from "src/AppConext";
 import { Transaction } from "../entity/Transaction";
 // import { User } from "../entity/User";
 import { isAuth } from "../isAuth";
-import { Arg, Ctx, Mutation, Resolver, UseMiddleware } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import { TransactionStatus } from "../lib/constants";
 import { GraphQLError } from "graphql";
 // import { GraphQLError } from "graphql";
 
 @Resolver(Transaction)
 export class TransactionResolver {
-
   /**
    * This function sends a request to another user to accept the
    * @param amount - {string} amount of money provided by the person asking for money.
@@ -72,7 +78,65 @@ export class TransactionResolver {
       return error;
     }
   }
-  //get the transaction by ID.
-  //get transactions based on user.
+
+  /**
+   * @description - The method takes a transaction id and returns a transaction/contract.
+   * @param context - The data received from the appollo context.
+   * @param id {number} - The transaction id.
+   * @returns {Transaction} - returns a single transaction besed on the id provided.
+   */
+  @Query(() => Transaction, { nullable: true })
+  @UseMiddleware(isAuth)
+  async getTransactionByID(@Ctx() context: AppContext, @Arg("id") id: number) {
+    //Get the user token from the headers.
+    const user = context.req.headers.authorization;
+    //Check if user is authenticated.
+    if (!user) {
+      return null;
+    }
+    try {
+      const result = await Transaction.findOne({ where: { id: id } });
+      return result;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  /**
+   * @description - The method takes a user id and return all the transactions/contracts for that user. 
+   * @param context - The data received from the appollo context.
+   * @returns {Transaction}- All the transaction that was requested by the user id.
+   */
+  @Query(() => Transaction, { nullable: true })
+  @UseMiddleware(isAuth)
+  async getTransactionByUser(@Ctx() context: AppContext) {
+    //Get the user token from the headers.
+    const user = context.req.headers.authorization;
+    //Check if user is authenticated.
+    if (!user) {
+      return null;
+    }
+    try {
+      const token = user.replace("Bearer ", "");
+      const foundUser = verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET as string
+      ) as any;
+
+      const result = await Transaction.createQueryBuilder("transaction")
+      .where("transaction.borrower = :borrower", {
+        borrower: foundUser.userId,
+      })
+      .orWhere({
+        lender: foundUser.userId,
+      })
+      .getOne();
+      return result;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
   //accept or reject money request.
 }
