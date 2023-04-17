@@ -15,6 +15,7 @@ import cookieParser from "cookie-parser";
 import { User } from "./entity/User";
 import { createAccessToken, createRefreshToken } from "./auth";
 import { sendRefreshToken } from "./sendRefreshToken";
+import { TransactionResolver } from "./Resolvers/TransactionResolver";
 
 (async () => {
   dotenv.config();
@@ -64,7 +65,7 @@ import { sendRefreshToken } from "./sendRefreshToken";
   const httpServer = http.createServer(app);
 
   const schema = await buildSchema({
-    resolvers: [UserResolver],
+    resolvers: [UserResolver,TransactionResolver],
     validate: { forbidUnknownValues: false },
   });
 

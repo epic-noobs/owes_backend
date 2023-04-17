@@ -6,7 +6,9 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
+import { Transaction } from "./Transaction";
 
 /**
  * This is the user entity.
@@ -67,4 +69,12 @@ export class User extends BaseEntity {
 
   @Column("int", { default: 0 })
   tokenVersion: number;
+
+
+  @OneToMany(() => Transaction, (transaction) => transaction.lender)
+  lender: Transaction[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.borrower)
+  borrower: Transaction[];
+
 }
