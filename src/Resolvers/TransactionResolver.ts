@@ -1,7 +1,6 @@
 import { verify } from "jsonwebtoken";
 import { AppContext } from "src/AppConext";
 import { Transaction } from "../entity/Transaction";
-// import { User } from "../entity/User";
 import { isAuth } from "../isAuth";
 import {
   Arg,
@@ -13,7 +12,6 @@ import {
 } from "type-graphql";
 import { TransactionStatus } from "../lib/constants";
 import { GraphQLError } from "graphql";
-// import { GraphQLError } from "graphql";
 
 @Resolver(Transaction)
 export class TransactionResolver {
@@ -39,13 +37,29 @@ export class TransactionResolver {
         token as string,
         process.env.ACCESS_TOKEN_SECRET as string
       ) as any;
-      //check if they are friends
+      //check if lender and borrower is not the same person.
+      if(lender ===foundUser.userId){
+        console.log("rell", foundUser.userId)
+        throw new GraphQLError(
+          "Transaction is invalid",
+          {
+            extensions: {
+              code: "FORBIDDEN",
+            },
+          }
+        );
+      };
+
+      //check if they are friends.
       //only send one transaction at a time.
       //This checks if there is already a transaction that was requested and is still in the pending or accepted status.
       //TODO: payed service can have more transactions.
       const result = await Transaction.createQueryBuilder("transaction")
         .where("transaction.borrower = :borrower", {
           borrower: foundUser.userId,
+        })
+        .andWhere({
+          lender: lender  
         })
         .andWhere({
           transaction_status: TransactionStatus.PENDING,
@@ -67,6 +81,8 @@ export class TransactionResolver {
           }
         );
       }
+      console.log("borrower:", foundUser.userId)
+      console.log("borrower:", lender)
       await Transaction.insert({
         amount: amount,
         created_at: created_at,
