@@ -11,15 +11,7 @@ import { User } from "../entity/User";
 export class Friend extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn("uuid")
-  id: number;
-
-  @Field()
-  @Column("text")
-  following_user: string;
-
-  @Field()
-  @Column("text")
-  followed_user: string;
+  id: string;
 
   @Field()
   @CreateDateColumn({
@@ -43,13 +35,13 @@ export class Friend extends BaseEntity {
   })
   isRequestAccepted: boolean
 
-  @ManyToOne(() => User, (following_user_id) => following_user_id.friend_followed)
+  @ManyToOne(() => User, (following_user) => following_user.friend_followed)
   @Field(() => [String])
   @JoinColumn()
-  following_user_id:User
+  following_user:string
 
-  @ManyToOne(() => User, (followed_user_id) => followed_user_id.friend_following)
+  @ManyToOne(() => User, (followed_user) => followed_user.friend_following)
   @Field(() => [String])
   @JoinColumn()
-  followed_user_id:User
+  followed_user:string
 }
