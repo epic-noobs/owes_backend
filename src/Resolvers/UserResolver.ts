@@ -15,6 +15,7 @@ import {
 import argon2 from "argon2";
 import { sendRefreshToken } from "../sendRefreshToken";
 import { verify } from "jsonwebtoken";
+import { GraphQLError } from "graphql";
 
 /**This is what will be returned during login */
 @ObjectType()
@@ -61,53 +62,59 @@ export class UserResolver {
     @Arg("lastname") lastname: string,
     @Arg("username") username: string
   ) {
-    if (username.length < 3 || firstname.length < 3 || lastname.length < 3) {
-      throw new Error(
-        "Invalid Registration, The username, firstname and lastname should be greater than two characters."
-      );
+
+    try {
+        if (username.length < 3 || firstname.length < 3 || lastname.length < 3) {
+            throw new Error(
+              "Invalid Registration, The username, firstname and lastname should be greater than two characters."
+            );
+          }
+          //Check if user alredy exist.
+          const userExist = await User.findOne({ where: { email: email } });
+          if (!userExist) {
+            //pattern for password to check if the password is strong
+            let strongPassword = new RegExp(
+              "(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{8,})"
+            );
+            //Create email pattern.
+            let strongEmail = new RegExp(
+              /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+            );
+            if (!strongEmail.test(email)) {
+              throw new Error("Not a valid email");
+            }
+            //Check if password is greater than 8 characters and has a capital letter and special character.
+            if (!strongPassword.test(password)) {
+              throw new Error("You are not authorized to perform this action.");
+            }
+      
+              console.log('here');
+              const hashedPassword = await argon2.hash(password);
+              await User.insert({
+                  email,
+                  password: hashedPassword,
+                  firstname,
+                  lastname,
+                  username,
+              });
+              return true;
+       
+          } else {
+            /**
+             * send an email to the existing user that an attempt was made to register
+             *  with their already existing account.
+             */
+            
+             throw new GraphQLError("User already exist.");
+            // TODO: Introduce a logger to keep track of what the users are doing.
+            // TODO: Introduce Nodamailer or any other email sending platform.
+          }
+      
+    } catch (error) {
+        console.log(error);
+        return false;
     }
-    //Check if user alredy exist.
-    const userExist = await User.findOne({ where: { email: email } });
-    if (!userExist) {
-      //pattern for password to check if the password is strong
-      let strongPassword = new RegExp(
-        "(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{8,})"
-      );
-      //Create email pattern.
-      let strongEmail = new RegExp(
-        /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
-      );
-      if (!strongEmail.test(email)) {
-        throw new Error("Not a valid email");
-      }
-      //Check if password is greater than 8 characters and has a capital letter and special character.
-      if (!strongPassword.test(password)) {
-        throw new Error("You are not authorized to perform this action.");
-      }
-      try {
-        const hashedPassword = await argon2.hash(password);
-        await User.insert({
-          email,
-          password: hashedPassword,
-          firstname,
-          lastname,
-          username,
-        });
-        return true;
-      } catch (error) {
-        console.log("Error: ", error);
-        throw new Error(error);
-      }
-    } else {
-      /**
-       * send an email to the existing user that an attempt was made to register
-       *  with their already existing account.
-       */
-      console.log("User already exist.");
-      throw new Error("User already exist.");
-      // TODO: Introduce a logger to keep track of what the users are doing.
-      // TODO: Introduce Nodamailer or any other email sending platform.
-    }
+
   }
 
   /**
@@ -172,7 +179,8 @@ export class UserResolver {
           );
         }
       } catch (error) {
-        throw new Error(error);
+        console.log(`\n ${error} \n`);
+        return error;
       }
     }
   }
