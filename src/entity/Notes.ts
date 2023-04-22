@@ -17,7 +17,7 @@ import { Transaction } from "./Transaction";
 export class Notes extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn("uuid")
-  id: number;
+  id: string;
 
   @Field()
   @Column("text")

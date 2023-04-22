@@ -39,7 +39,6 @@ export class TransactionResolver {
       ) as any;
       //check if lender and borrower is not the same person.
       if(lender ===foundUser.userId){
-        console.log("rell", foundUser.userId)
         throw new GraphQLError(
           "Transaction is invalid",
           {
@@ -81,8 +80,6 @@ export class TransactionResolver {
           }
         );
       }
-      console.log("borrower:", foundUser.userId)
-      console.log("borrower:", lender)
       await Transaction.insert({
         amount: amount,
         created_at: created_at,
@@ -98,12 +95,12 @@ export class TransactionResolver {
   /**
    * @description - The method takes a transaction id and returns a transaction/contract.
    * @param context - The data received from the appollo context.
-   * @param id {number} - The transaction id.
+   * @param id {string} - The transaction id.
    * @returns {Transaction} - returns a single transaction besed on the id provided.
    */
   @Query(() => Transaction, { nullable: true })
   @UseMiddleware(isAuth)
-  async getTransactionByID(@Ctx() context: AppContext, @Arg("id") id: number) {
+  async getTransactionByID(@Ctx() context: AppContext, @Arg("id") id: string) {
     //Get the user token from the headers.
     const user = context.req.headers.authorization;
     //Check if user is authenticated.
@@ -124,7 +121,7 @@ export class TransactionResolver {
    * @param context - The data received from the appollo context.
    * @returns {Transaction}- All the transaction that was requested by the user id.
    */
-  @Query(() => Transaction, { nullable: true })
+  @Query(() => [Transaction], { nullable: true })
   @UseMiddleware(isAuth)
   async getTransactionByUser(@Ctx() context: AppContext) {
     //Get the user token from the headers.
@@ -139,7 +136,7 @@ export class TransactionResolver {
         token,
         process.env.ACCESS_TOKEN_SECRET as string
       ) as any;
-
+      //TODO: Join notes and Transaction table.
       const result = await Transaction.createQueryBuilder("transaction")
       .where("transaction.borrower = :borrower", {
         borrower: foundUser.userId,
@@ -147,12 +144,12 @@ export class TransactionResolver {
       .orWhere({
         lender: foundUser.userId,
       })
-      .getOne();
+      .getMany();
       return result;
     } catch (error) {
       console.log(error);
       return null;
     }
   }
-  //accept or reject money request.
+  //TODO: accept or reject money request.
 }

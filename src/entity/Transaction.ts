@@ -22,7 +22,7 @@ import { Max } from "class-validator"
 export class Transaction extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn("uuid")
-  id: number;
+  id: string;
 
   @Field()
   @CreateDateColumn({
@@ -32,7 +32,7 @@ export class Transaction extends BaseEntity {
   contract_date: Date;
 
   @Field()
-  @Column("text")
+  @Column("text") 
   created_at: string; 
   
   @Field()
@@ -51,12 +51,10 @@ export class Transaction extends BaseEntity {
   notes: Notes[];
 
   @ManyToOne(() => User, (lender) => lender.lender)
-  @Field(() => [String])
   @JoinColumn()
   lender: string;  //The person giving the money.
 
   @ManyToOne(() => User, (borrower) => borrower.borrower)
-  @Field(() => [String])
   @JoinColumn()
   borrower: User; //The person asking_for_money.
 
