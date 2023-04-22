@@ -154,7 +154,7 @@ export class TransactionResolver {
   //TODO: accept or reject money request.
   @Mutation(() => Transaction, { nullable: true })
   @UseMiddleware(isAuth)
-  async respond_to_transaction(
+  async respondToTransaction(
     @Arg("id") id: string,
     @Arg("answer") answer: string,
   ) {
