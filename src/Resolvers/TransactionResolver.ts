@@ -152,4 +152,31 @@ export class TransactionResolver {
     }
   }
   //TODO: accept or reject money request.
+  @Mutation(() => Transaction, { nullable: true })
+  @UseMiddleware(isAuth)
+  async respond_to_transaction(
+    @Arg("id") id: string,
+    @Arg("answer") answer: string,
+  ) {
+    // TODO: Check if users have a friendship. 
+    let feedback = null;
+    if(answer.toLowerCase() === TransactionStatus.ACCEPTED.toLocaleLowerCase()){
+      feedback = TransactionStatus.ACCEPTED;
+    }else if(answer.toLowerCase() === TransactionStatus.ACCEPTED.toLocaleLowerCase()){
+      feedback = TransactionStatus.REJECTED;
+    }else{
+      return feedback;
+    }
+    try{
+      return await Transaction.update(
+        { id: id },
+        {
+          transaction_status: feedback
+        }
+      );
+    }catch(error){
+      console.log(error);
+      return null;
+    }
+  }
 }
