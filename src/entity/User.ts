@@ -9,6 +9,7 @@ import {
   OneToMany,
 } from "typeorm";
 import { Transaction } from "./Transaction";
+import { Friend } from "./Friend";
 
 /**
  * This is the user entity.
@@ -77,4 +78,9 @@ export class User extends BaseEntity {
   @OneToMany(() => Transaction, (transaction) => transaction.borrower)
   borrower: Transaction[];
 
+  @OneToMany(() => Friend, (friend) => friend.following_user_id)
+  friend_following: Friend[]
+
+  @OneToMany(() => Friend, (friend) => friend.followed_user_id)
+  friend_followed: Friend[]
 }
