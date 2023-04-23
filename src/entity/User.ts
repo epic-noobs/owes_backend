@@ -78,9 +78,9 @@ export class User extends BaseEntity {
   @OneToMany(() => Transaction, (transaction) => transaction.borrower)
   borrower: Transaction[];
 
-  @OneToMany(() => Friend, (friend) => friend.following_user_id)
+  @OneToMany(() => Friend, (friend) => friend.following_user)
   friend_following: Friend[]
 
-  @OneToMany(() => Friend, (friend) => friend.followed_user_id)
+  @OneToMany(() => Friend, (friend) => friend.followed_user)
   friend_followed: Friend[]
 }

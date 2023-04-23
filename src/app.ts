@@ -16,6 +16,7 @@ import { User } from "./entity/User";
 import { createAccessToken, createRefreshToken } from "./auth";
 import { sendRefreshToken } from "./sendRefreshToken";
 import { TransactionResolver } from "./Resolvers/TransactionResolver";
+import { FriendResolver } from "./Resolvers/FriendResolver";
 
 (async () => {
   dotenv.config();
@@ -65,7 +66,7 @@ import { TransactionResolver } from "./Resolvers/TransactionResolver";
   const httpServer = http.createServer(app);
 
   const schema = await buildSchema({
-    resolvers: [UserResolver,TransactionResolver],
+    resolvers: [UserResolver, FriendResolver, TransactionResolver],
     validate: { forbidUnknownValues: false },
   });
 
