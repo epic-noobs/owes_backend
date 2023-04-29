@@ -3,7 +3,6 @@ import {
     Arg,
     Ctx,
     Mutation,
-    Query,
     Resolver,
     UseMiddleware,
 } from "type-graphql";

@@ -1,11 +1,11 @@
-import { Field, ID, ObjectType } from "type-graphql";
+import { Field, ObjectType } from "type-graphql";
 import {
   Entity,
   BaseEntity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   JoinColumn,
+  OneToOne,
 } from "typeorm";
 import { Transaction } from "./Transaction";
 
@@ -15,7 +15,6 @@ import { Transaction } from "./Transaction";
 @ObjectType()
 @Entity("notes")
 export class Notes extends BaseEntity {
-  @Field(() => ID)
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
@@ -23,8 +22,7 @@ export class Notes extends BaseEntity {
   @Column("text")
   note: string; //The person asking_for_money.
 
-  @ManyToOne(() => Transaction, (transaction) => transaction.notes)
-  @Field(() => [String])
+  @OneToOne(() => Transaction, (transaction) => transaction.notes)
   @JoinColumn()
   transaction: Transaction; //The person asking_for_money.
 

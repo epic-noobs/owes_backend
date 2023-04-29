@@ -12,6 +12,8 @@ import {
 } from "type-graphql";
 import { TransactionStatus } from "../lib/constants";
 import { GraphQLError } from "graphql";
+import { checkFriendship } from "../util/functions";
+import { Notes } from "../entity/Notes";
 
 @Resolver(Transaction)
 export class TransactionResolver {
@@ -27,7 +29,8 @@ export class TransactionResolver {
     @Ctx() context: AppContext,
     @Arg("amount") amount: number,
     @Arg("created_at") created_at: string,
-    @Arg("lender") lender: string
+    @Arg("lender") lender: string,
+    @Arg("note", { nullable: true }) note?: string
   ) {
     //Get the user token from the headers.
     const user = context.req.headers.authorization;
@@ -48,6 +51,18 @@ export class TransactionResolver {
           }
         );
       };
+      //check if users are friends.
+      let areFriends = await checkFriendship(foundUser.userId, lender);
+      if(!areFriends){
+        throw new GraphQLError(
+          "Users not friends",
+          {
+            extensions: {
+              code: "FORBIDDEN",
+            },
+          }
+        );
+      }
 
       //check if they are friends.
       //only send one transaction at a time.
@@ -80,12 +95,20 @@ export class TransactionResolver {
           }
         );
       }
-      await Transaction.insert({
+      // insert for note. 
+      const createdTransaction = await Transaction.insert({
         amount: amount,
         created_at: created_at,
         borrower: foundUser.userId, // The person asking for the mponey.
         lender: lender, // The person being asked for the money.
       });
+      // If there is a note then we insert to the notes table.
+      if(note){
+        await Notes.insert({
+          note,
+          transaction: createdTransaction.identifiers[0].id
+        });
+      }
       return true;
     } catch (error) {
       return error;
@@ -108,7 +131,24 @@ export class TransactionResolver {
       return null;
     }
     try {
-      const result = await Transaction.findOne({ where: { id: id } });
+      const transactionExist = await Transaction.findOne({ where: { id: id } });
+      if(!transactionExist){
+        throw new GraphQLError(
+          "Transaction does not exist",
+          {
+            extensions: {
+              code: "FORBIDDEN",
+            },
+          }
+        );
+      }
+      const transactionQueryBuilder = Transaction.createQueryBuilder('transaction');
+
+      const result = await transactionQueryBuilder.select('transaction')
+      .leftJoinAndSelect('transaction.notes', 'note')
+      .where('transaction.id = :id', { id: id })
+      .getOne();
+      console.log("gift: ", result);
       return result;
     } catch (error) {
       console.log(error);

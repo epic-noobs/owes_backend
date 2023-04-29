@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToMany,
+  OneToOne,
 } from "typeorm";
 import { User } from "./User";
 import { Notes } from "./Notes";
@@ -47,8 +47,9 @@ export class Transaction extends BaseEntity {
   @Max(2)
   settled_counter: number;
 
-  @OneToMany(() => Notes, (notes) => notes.transaction)
-  notes: Notes[];
+  @Field({ nullable: true })
+  @OneToOne(() => Notes, (notes) => notes.transaction)
+  notes: Notes;
 
   @ManyToOne(() => User, (lender) => lender.lender)
   @JoinColumn()
